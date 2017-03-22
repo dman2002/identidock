@@ -12,8 +12,8 @@ def mainpage():
     name = default_name
     if request.method == 'POST':
         name = html.escape(request.form['name'], quote=True) 
-    salted_name = salt + name
-    name_hash = hashlib.sha256(salted_name.encode()).hexdigest() 
+#    salted_name = salt + name
+#    name_hash = hashlib.sha256(salted_name.encode()).hexdigest() 
 
     header = '<html><head><title>Identidock</title></head><body>'    
     body = '''
@@ -23,7 +23,7 @@ def mainpage():
     </form>              
 	 <p>You look like a:              
 	 <img src="/monster/{1}"/>
-     '''.format(name, name_hash)
+     '''.format(name, name)
     footer = '</body></html>'
     return header + body + footer
 
@@ -32,8 +32,11 @@ def get_identicon(name):
     name = html.escape(name, quote=True)
     image = cache.get(name)
     if image is None:
+        salted_name = salt + name
+        name_hash = hashlib.sha256(salted_name.encode()).hexdigest()
         print ("Cache miss", flush=True)
-        r = requests.get('http://dnmonster:8080/monster/' + name + '?size=80')
+        
+        r = requests.get('http://dnmonster:8080/monster/' + name_hash + '?size=80')
         image = r.content
         cache.set(name, image)        
     return Response(image, mimetype='image/png')
